@@ -44,4 +44,11 @@ char	**ft_split(char const *s, char c);
 
 int ft_isspace(char c);
 
+int expand_variables(t_token *tokens, t_quote_state *state);
+char *expand_env_vars(char *str, t_quote_state *state);
+char *get_var_value(char *var_name);
+void detect_file(t_token *tokens);
+
+
+
 #endif

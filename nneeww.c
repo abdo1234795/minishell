@@ -17,13 +17,13 @@ char *remove_c(char *s, char c)
 	new[j] = '\0';
 	return (new);
 }
-int second_check(char *buffer, t_quote_state *state)
+int pr_check(char *buffer, t_quote_state *state)
 {
-	if (state == UNQUOTED && buffer[0] == '<' && (!buffer[1] || buffer[1] == '<'))
+	if (state == UNQUOTED && (ft_strcmp(buffer, ">") == 0 || ft_strcmp(buffer, ">>") == 0))
 		return(1);
-	if (state == UNQUOTED && buffer[0] == '>' && (!buffer[1] || buffer[1] == '>'))
+	if (state == UNQUOTED && (ft_strcmp(buffer, "<") == 0 || ft_strcmp(buffer, "<<") == 0))
 		return(1);
-	if (state == UNQUOTED && buffer[0] == '|' && !buffer[1])
+	if (state == UNQUOTED && (ft_strcmp(buffer, "|") == 0))
 		return(1);
 	return (0);// write syntax error !!!!!!
 }
@@ -32,9 +32,11 @@ int second_check(char *buffer, t_quote_state *state)
 void get_type_add_token(t_token **tokens, char *buffer, t_quote_state *state)
 {
 
-	if (!second_check(buffer, state))
-		return ;
-	
+	if (buffer[0] == '>' || buffer[0] == '<' || buffer[0] == '|')
+	{
+		if (!pr_check(buffer, state))
+			return ;
+	}
 	char *tmp = remove_c(buffer, '\"');
     if (!tmp)
 		return ;
@@ -53,29 +55,65 @@ void get_type_add_token(t_token **tokens, char *buffer, t_quote_state *state)
     new_token->value = ft_strdup(new_buff);
     new_token->next = NULL;
 	if (ft_strcmp(new_buff, "echo") == 0)
+	{
 		new_token->type = cmd;
+		new_token->value = "echo";
+	}
     else if (ft_strcmp(new_buff, "-n") == 0)
+	{
 		new_token->type = cmd;
+		new_token->value = "-n";		
+	}
     else if (ft_strcmp(new_buff, "cd") == 0)
+	{
 		new_token->type = cmd;
+		new_token->value = "cd";		
+	}
     else if (ft_strcmp(new_buff, "pwd") == 0)
+	{
 		new_token->type = cmd;
+		new_token->value = "pwd";		
+	}
     else if (ft_strcmp(new_buff, "export") == 0)
+	{
 		new_token->type = cmd;
+		new_token->value = "export";		
+	}
     else if (ft_strcmp(new_buff, "unset") == 0)
+	{
 		new_token->type = cmd;
+		new_token->value = "unset";		
+	}
     else if (ft_strcmp(new_buff, "env") == 0)
+	{
 		new_token->type = cmd;
+		new_token->value = "env";		
+	}
     else if (ft_strcmp(new_buff, "exit") == 0)
+	{
 		new_token->type = cmd;
+		new_token->value = "exit";		
+	}
     else if (ft_strcmp(new_buff, ">") == 0 && state == UNQUOTED)
+	{
 		new_token->type = red;
+		new_token->value = ">";
+	}
     else if (ft_strcmp(new_buff, "<") == 0 && state == UNQUOTED)
+	{
 		new_token->type = red;
+		new_token->value = "<";
+	}
     else if (ft_strcmp(new_buff, ">>") == 0 && state == UNQUOTED)
+	{
 		new_token->type = red;
+		new_token->value = ">>";		
+	}
     else if (ft_strcmp(new_buff, "<<") == 0 && state == UNQUOTED)
+	{
 		new_token->type = red;
+		new_token->value = "<<";		
+	}
     else if (ft_strcmp(new_buff, "|") == 0 && state == UNQUOTED)
 		new_token->type = pip;
     else
@@ -93,28 +131,61 @@ void get_type_add_token(t_token **tokens, char *buffer, t_quote_state *state)
             current = current->next;
         current->next = new_token;
     }
+	detect_file(tokens);
+	expand_variables(tokens, state);
 }
 
 
 void detect_file(t_token *tokens)
 {
     t_token *current = tokens;
-    t_token *second = NULL;
+    t_token *previous = NULL;
 
     while (current != NULL)
     {
-        if (current->type == text && second != NULL && second->type == red)
+        if (current->type == text && previous != NULL && previous->type == red)
         {
-            if (ft_strcmp(second->value, ">") == 0 || 
-                ft_strcmp(second->value, ">>") == 0 || 
-                ft_strcmp(second->value, "<") == 0)
+            if (ft_strcmp(previous->value, ">") == 0 || 
+                ft_strcmp(previous->value, ">>") == 0 || 
+                ft_strcmp(previous->value, "<") == 0)
             {
                 current->type = file;
             }
         }
-        second = current;
+        previous = current;
         current = current->next;
     }
+}
+int ft_stop(char c)
+{
+	return (ft_isspace(c) || c == '>' || c == '<');
+}
+
+int syntax_valid(t_token *tokens)
+{
+	t_token *current = tokens;
+	t_token *previous;
+
+	if (!current)
+        return 1;
+	previous = current;
+	current = current->next;
+	if (previous->type == pip || previous->type == red)
+		return (0);
+	while (current)
+	{
+		if ((previous->type == pip || (previous->type == red && ft_strcmp(previous->value, "<<") == 0)) && current->type == file )
+			return (0);
+		if (current->type == pip && previous->type == pip)
+			return 0;
+		if (current->type == red && ft_strcmp(previous->value, "<<") == 0 && (!current->next || current->next->type != file))
+			return 0;
+		previous = current;
+    	current = current->next;
+	}
+	if (previous->type == pip || previous->type == red)
+		return (0);
+	return (1);
 }
 
 t_token	*sep(char *line)
@@ -131,35 +202,31 @@ t_token	*sep(char *line)
         char c = line[j];
         if (state == UNQUOTED && (c == '\'' || c == '"'))
 		{
-			if (c == '\'')
-				state = SINGLE_QUOTED;
+			if (c == '\'')				state = SINGLE_QUOTED;
 			else
 				state = DOUBLE_QUOTED;
             buffer[i++] = c;
         }
-		else if ((state == SINGLE_QUOTED && c == '\'' && line[j + 1] && line[j + 1] != '\'' && line[j + 1] != '"') || 
-				(state == DOUBLE_QUOTED && c == '"' && line[j + 1] && line[j + 1] != '\'' && line[j + 1] != '"'))
+		else if ((state == SINGLE_QUOTED && c == '\'' && line[j + 1] && line[j + 1] != '\'' && line[j + 1] != '"' && ft_stop(line[j+1])) || 
+				(state == DOUBLE_QUOTED && c == '"' && line[j + 1] && line[j + 1] != '\'' && line[j + 1] != '"' && ft_stop(line[j+1])))
 		{
             buffer[i++] = c;
             buffer[i] = '\0';
-            add_token(&tokens, buffer, state); //??? ->>>  type
+            add_token(&tokens, buffer, state);
             state = UNQUOTED;
             i = 0;
         }
-		else if ((state == SINGLE_QUOTED && c == '\'' && line[j + 1] && (line[j + 1] == '\'' || line[j + 1] == '"')) || 
-				(state == DOUBLE_QUOTED && c == '"' && line[j + 1] && (line[j + 1] == '\'' && line[j + 1] == '"')))
+		else if ((state == SINGLE_QUOTED && c == '\'' && line[j + 1] && (line[j + 1] == '\'' || line[j + 1] == '"' || !ft_stop(line[j+1]))) || 
+				(state == DOUBLE_QUOTED && c == '"' && line[j + 1] && (line[j + 1] == '\'' || line[j + 1] == '"' || !ft_stop(line[j+1]))))
 		{
 			buffer[i++] = c;
-			if (line[j] == '\'')
-				state = SINGLE_QUOTED;
-			else
-				state = DOUBLE_QUOTED;
-			buffer[i++] = c;
+			state = UNQUOTED;
 		}
-		else if (state == UNQUOTED && ft_strchr("|<>", c)) // add ft_strchr from lib
+		else if (state == UNQUOTED && (ft_strchr("|<>", c) || buffer[0] == '|' || buffer[0] == '>' || buffer[0] == '<'))
 		{
 
-            if (i > 0 && buffer[0] != '<' && buffer[0] != '>') {
+            if (i > 0 && buffer[0] != '<' && buffer[0] != '>')
+			{
                 buffer[i] = '\0';
                 get_type_add_token(&tokens, buffer, state);
                 i = 0;
@@ -216,50 +283,5 @@ t_token	*sep(char *line)
         
 		//exit erroor!!!!!!!!!!!!free
     }
-	detect_file(tokens);
     return tokens;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

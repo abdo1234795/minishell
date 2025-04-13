@@ -33,7 +33,7 @@ t_cmd *create_new_command(void)
     return cmd;
 }
 
-// Add argument to a command
+
 void add_argument(t_cmd *cmd, char *arg)
 {
     if (!cmd || !arg)
@@ -42,7 +42,7 @@ void add_argument(t_cmd *cmd, char *arg)
     if (cmd->arg_count == 0)
         cmd->name = ft_strdup(arg);
     
-    if (cmd->arg_count >= cmd->arg_capacity)// Check if we need to resize the arguments array
+    if (cmd->arg_count >= cmd->arg_capacity)
 	{
         cmd->arg_capacity *= 2;
         char **new_args = malloc(sizeof(char *) * (cmd->arg_capacity + 1));
@@ -50,12 +50,12 @@ void add_argument(t_cmd *cmd, char *arg)
         if (!new_args)
             return;
         
-        // Copy existing arguments
+
 		int i = -1;
         while (++i < cmd->arg_count)
             new_args[i] = cmd->args[i];
         
-        // Set rest to NULL
+
 		i = cmd->arg_count - 1;
         while (++i <= cmd->arg_capacity)
             new_args[i] = NULL;
@@ -83,7 +83,7 @@ t_redirection	*create_redirection(char *file, int type)
 	return (redir);
 }
 
-// Handle redirection tokens
+
 void handle_redirection(t_cmd *cmd, t_token *token)
 {
     if (!cmd || !token || !token->next)
@@ -132,7 +132,6 @@ void handle_redirection(t_cmd *cmd, t_token *token)
     }
 }
 
-// Free command structure
 void free_command(t_cmd *cmd)
 {
     if (!cmd)
@@ -173,7 +172,6 @@ void free_command(t_cmd *cmd)
     free(cmd);
 }
 
-// Free all commands in a pipeline
 void	free_commands(t_cmd *commands)
 {
 	t_cmd *current;

@@ -31,8 +31,27 @@ typedef struct s_token {
 // 	char	*right;
 // 	char	*left;
 // }	t_tree;
+#define REDIR_IN 1      // <
+#define REDIR_OUT 2     // >
+#define REDIR_APPEND 3  // >>
+#define REDIR_HEREDOC 4 // <<
 
+typedef struct s_redirection {
+    char *file;          // File to redirect to/from
+    int type;            // Type of redirection (>, <, >>, <<)
+    struct s_redirection *next;
+} t_redirection;
 
+// Command before pipeline!!!!!
+typedef struct s_cmd {
+    char *name;
+    char **args;
+    int arg_count;
+    int arg_capacity;
+    t_redirection *in;
+    t_redirection *out;
+    struct s_cmd *next; // Next command in pipeline
+} t_cmd;
 
 
 int	ft_strcmp(const char *s1, const char *s2);

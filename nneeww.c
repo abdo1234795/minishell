@@ -176,8 +176,8 @@ int syntax_valid(t_token *tokens)
 	{
 		if ((previous->type == pip || (previous->type == red && ft_strcmp(previous->value, "<<") == 0)) && current->type == file )
 			return (0);
-		if (current->type == pip && previous->type == pip)
-			return 0;
+		if ((current->type == pip || current->type == red) && (previous->type == pip || previous->type == red))
+    		return 0;
 		if (current->type == red && ft_strcmp(previous->value, "<<") == 0 && (!current->next || current->next->type != file))
 			return 0;
 		previous = current;
@@ -196,7 +196,7 @@ t_token	*sep(char *line)
 	int j = -1;
     t_quote_state state = UNQUOTED;
 
-	int i = -1; 
+
     while (line[++j])
 	{
         char c = line[j];
@@ -212,7 +212,7 @@ t_token	*sep(char *line)
 		{
             buffer[i++] = c;
             buffer[i] = '\0';
-            add_token(&tokens, buffer, state);
+            get_type_add_token(&tokens, buffer, state);
             state = UNQUOTED;
             i = 0;
         }

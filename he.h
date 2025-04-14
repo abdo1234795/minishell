@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -19,10 +20,13 @@ typedef enum e_quote_state {
 
 
 
-typedef struct s_token {
-    char *value;
-    t_types type;
-    struct s_token *next;
+typedef struct s_token
+{
+	char *value;
+	t_types type;
+	bool syn_err;
+	bool heredoc;
+	struct s_token *next;
 } t_token;
 
 
@@ -36,21 +40,23 @@ typedef struct s_token {
 #define REDIR_APPEND 3  // >>
 #define REDIR_HEREDOC 4 // <<
 
-typedef struct s_redirection {
-    char *file;          // File to redirect to/from
-    int type;            // Type of redirection (>, <, >>, <<)
-    struct s_redirection *next;
+typedef struct s_redirection
+{
+	char					*file;
+	int						type;
+	struct s_redirection	*next;
 } t_redirection;
 
 // Command before pipeline!!!!!
 typedef struct s_cmd {
-    char *name;
-    char **args;
-    int arg_count;
-    int arg_capacity;
-    t_redirection *in;
-    t_redirection *out;
-    struct s_cmd *next; // Next command in pipeline
+	char *name;
+	char **args;
+	int arg_count;
+	int arg_capacity;
+	bool	syn_err;
+	t_redirection *in;
+	t_redirection *out;
+	struct s_cmd *next; // Next command in pipeline
 } t_cmd;
 
 
@@ -67,6 +73,8 @@ int expand_variables(t_token *tokens, t_quote_state *state);
 char *expand_env_vars(char *str, t_quote_state *state);
 char *get_var_value(char *var_name);
 void detect_file(t_token *tokens);
+
+int syntax_valid(t_token *tokens);
 
 
 

@@ -28,14 +28,35 @@ int pr_check(char *buffer, t_quote_state *state)
 	return (0);// write syntax error !!!!!!
 }
 
+void add_err_token(t_token *token)
+{
+	t_token *new_token = malloc(sizeof(t_token));
+	if (!new_token)
+        return (NULL);
+	if (token == NULL) {
+        token = new_token;
+    }
+	else
+	{
+        t_token *current = token;
+        while (current->next)
+            current = current->next;
+        current->next = new_token;
+		new_token->syn_err = true;
+		new_token->next = NULL;
+    }
+}
 
-void get_type_add_token(t_token **tokens, char *buffer, t_quote_state *state)
+int get_type_add_token(t_token **tokens, char *buffer, t_quote_state *state)
 {
 
 	if (buffer[0] == '>' || buffer[0] == '<' || buffer[0] == '|')
 	{
 		if (!pr_check(buffer, state))
-			return ;
+		{
+			add_err_token(*tokens);
+			return 0;
+		}
 	}
 	char *tmp = remove_c(buffer, '\"');
     if (!tmp)
@@ -58,67 +79,81 @@ void get_type_add_token(t_token **tokens, char *buffer, t_quote_state *state)
 	{
 		new_token->type = cmd;
 		new_token->value = "echo";
+		new_token->heredoc = false;
 	}
     else if (ft_strcmp(new_buff, "-n") == 0)
 	{
 		new_token->type = cmd;
-		new_token->value = "-n";		
+		new_token->value = "-n";
+		new_token->heredoc = false;		
 	}
     else if (ft_strcmp(new_buff, "cd") == 0)
 	{
 		new_token->type = cmd;
-		new_token->value = "cd";		
+		new_token->value = "cd";
+		new_token->heredoc = false;		
 	}
     else if (ft_strcmp(new_buff, "pwd") == 0)
 	{
 		new_token->type = cmd;
-		new_token->value = "pwd";		
+		new_token->value = "pwd";
+		new_token->heredoc = false;	
 	}
     else if (ft_strcmp(new_buff, "export") == 0)
 	{
 		new_token->type = cmd;
-		new_token->value = "export";		
+		new_token->value = "export";
+		new_token->heredoc = false;		
 	}
     else if (ft_strcmp(new_buff, "unset") == 0)
 	{
 		new_token->type = cmd;
-		new_token->value = "unset";		
+		new_token->value = "unset";
+		new_token->heredoc = false;		
 	}
     else if (ft_strcmp(new_buff, "env") == 0)
 	{
 		new_token->type = cmd;
-		new_token->value = "env";		
+		new_token->value = "env";
+		new_token->heredoc = false;		
 	}
     else if (ft_strcmp(new_buff, "exit") == 0)
 	{
 		new_token->type = cmd;
-		new_token->value = "exit";		
+		new_token->value = "exit";
+		new_token->heredoc = false;		
 	}
     else if (ft_strcmp(new_buff, ">") == 0 && state == UNQUOTED)
 	{
 		new_token->type = red;
 		new_token->value = ">";
+		new_token->heredoc = false;
 	}
     else if (ft_strcmp(new_buff, "<") == 0 && state == UNQUOTED)
 	{
 		new_token->type = red;
 		new_token->value = "<";
+		new_token->heredoc = false;
 	}
     else if (ft_strcmp(new_buff, ">>") == 0 && state == UNQUOTED)
 	{
 		new_token->type = red;
-		new_token->value = ">>";		
+		new_token->value = ">>";
+		new_token->heredoc = false;		
 	}
     else if (ft_strcmp(new_buff, "<<") == 0 && state == UNQUOTED)
 	{
 		new_token->type = red;
-		new_token->value = "<<";		
+		new_token->value = "<<";
+		new_token->heredoc = true;		
 	}
     else if (ft_strcmp(new_buff, "|") == 0 && state == UNQUOTED)
 		new_token->type = pip;
     else
+	{
 		new_token->type = text;
-
+		new_token->heredoc = false;
+	}
 	free(new_buff);
 
     if (*tokens == NULL) {
@@ -133,6 +168,7 @@ void get_type_add_token(t_token **tokens, char *buffer, t_quote_state *state)
     }
 	detect_file(tokens);
 	expand_variables(tokens, state);
+	return (1);
 }
 
 
@@ -161,9 +197,25 @@ int ft_stop(char c)
 	return (ft_isspace(c) || c == '>' || c == '<');
 }
 
-int syntax_valid(t_token *tokens)
+void free_remaining_token(t_token *start)
 {
-	t_token *current = tokens;
+	t_token	*current;
+	t_token	*next;
+
+	current = start;
+	while (current)
+	{
+		next = current->next;
+		free(current->value);
+		free(current);
+		current = next;
+	}
+}
+
+
+int syntax_valid(t_token **tokens) //// check!!!!!!!!!!!!!!!!!!
+{
+	t_token *current = *tokens;
 	t_token *previous;
 
 	if (!current)
@@ -171,20 +223,55 @@ int syntax_valid(t_token *tokens)
 	previous = current;
 	current = current->next;
 	if (previous->type == pip || previous->type == red)
+	{
+		previous->syn_err = true;
+		free_remaining_token(previous->next);
+		previous->next = NULL;
 		return (0);
+	}
 	while (current)
 	{
-		if ((previous->type == pip || (previous->type == red && ft_strcmp(previous->value, "<<") == 0)) && current->type == file )
+		if (current->type == pip && (previous->type == pip || previous->type == red))
+		{
+			previous->syn_err = true;
+			free_remaining_token(previous->next);
+			previous->next = NULL;
 			return (0);
-		if ((current->type == pip || current->type == red) && (previous->type == pip || previous->type == red))
-    		return 0;
-		if (current->type == red && ft_strcmp(previous->value, "<<") == 0 && (!current->next || current->next->type != file))
-			return 0;
+		}
+		if (current->type == red && previous->type == red)
+		{
+			previous->syn_err = true;
+			free_remaining_token(previous->next);
+			previous->next = NULL;
+			return (0);
+		}
+		if (previous->type == red && current->type != file && current->type != text)
+		{
+			previous->syn_err = true;
+			free_remaining_token(previous->next);
+			previous->next = NULL;
+			return (0);
+		}
+		if (previous->type == red && ft_strcmp(previous->value, "<<") == 0)
+		{
+			if (!current || (current->type != file && current->type != text))
+			{
+				previous->syn_err = true;
+				free_remaining_token(previous->next);
+				previous->next = NULL;
+				return (0);
+			}
+		}
 		previous = current;
-    	current = current->next;
+		current = current->next;
 	}
 	if (previous->type == pip || previous->type == red)
+	{
+		previous->syn_err = true;
+		free_remaining_token(previous->next);
+		previous->next = NULL;
 		return (0);
+	}
 	return (1);
 }
 
@@ -212,7 +299,8 @@ t_token	*sep(char *line)
 		{
             buffer[i++] = c;
             buffer[i] = '\0';
-            get_type_add_token(&tokens, buffer, state);
+            if (!get_type_add_token(&tokens, buffer, state));
+				break ;
             state = UNQUOTED;
             i = 0;
         }
@@ -228,7 +316,8 @@ t_token	*sep(char *line)
             if (i > 0 && buffer[0] != '<' && buffer[0] != '>')
 			{
                 buffer[i] = '\0';
-                get_type_add_token(&tokens, buffer, state);
+                if (!get_type_add_token(&tokens, buffer, state));
+					break ;
                 i = 0;
             }
 			else if (i > 0 && buffer[0] == '<' && c == '<')
@@ -242,13 +331,15 @@ t_token	*sep(char *line)
 			else if (i > 0 && buffer[0] == '<' && c != '<')
 			{
 				buffer[i] = '\0';
-				get_type_add_token(&tokens, buffer, state);
+				if (!get_type_add_token(&tokens, buffer, state));
+					break ;
 				i = 0;
 			}
 			else if (i > 0 && buffer[0] == '>' && c != '>')
 			{
 				buffer[i] = '\0';
-				get_type_add_token(&tokens, buffer, state);
+				if (!get_type_add_token(&tokens, buffer, state));
+					break ;
 				i = 0;
 			}
 			else if (i > 0 && buffer[0] == '|' && c == '|')
@@ -259,7 +350,8 @@ t_token	*sep(char *line)
 			{
 				buffer[i++] = c;
 				buffer[i] = '\0';
-				get_type_add_token(&tokens, buffer, state);
+				if (!get_type_add_token(&tokens, buffer, state));
+					break ;
 				i = 0;
 			}
 			else if (i == 0)
@@ -272,16 +364,38 @@ t_token	*sep(char *line)
             if (i > 0)
 			{
                 buffer[i] = '\0';
-                get_type_add_token(&tokens, buffer, state);
+                if (!get_type_add_token(&tokens, buffer, state));
+					break ;
                 i = 0;
             }
         }
 		else
             buffer[i++] = c;
     }
+
+	syntax_valid(tokens);
+
+	bool here_doc;
+	t_token *curr = tokens;
+	t_token *prev;
+	while(curr)
+	{
+		if (curr->heredoc == true)
+			here_doc = true;
+		prev = curr;
+		curr = curr->next;
+	}
+	if (prev->syn_err && here_doc)
+		return (tokens);
+	if (prev->syn_err && !here_doc)
+		return (NULL);//!!!!!!!!!!!!!!! SYNTAX ERR !!!!
+
+
+
     if (i > 0 && state != UNQUOTED) {
         
 		//exit erroor!!!!!!!!!!!!free
-    }
-    return tokens;
+	}
+	if (!prev->syn_err)
+		return tokens;
 }

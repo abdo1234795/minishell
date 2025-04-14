@@ -89,3 +89,7 @@ int expand_variables(t_token *tokens, t_quote_state *state)
     }
     return (1);
 }
+
+
+
+///////////////////////??????

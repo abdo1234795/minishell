@@ -27,6 +27,7 @@ t_cmd *create_new_command(void)
     while (++i <= cmd->arg_capacity)
         cmd->args[i] = NULL;
     
+	cmd->syn_err = false;
     cmd->in = NULL;
     cmd->out = NULL;
     cmd->next = NULL;
@@ -209,7 +210,7 @@ t_cmd *parse_tokens(t_token *tokens)
     	return NULL;
 	}
     current_cmd = commands;
-    while (current)
+    while (current && !current->syn_err)
     {
         if (current->type == pip)
         {
@@ -235,5 +236,7 @@ t_cmd *parse_tokens(t_token *tokens)
         if (current)
             current = current->next;
     }
+	if (current && current->syn_err)
+		current_cmd->syn_err = true;
     return commands;
 }

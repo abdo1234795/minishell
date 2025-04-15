@@ -197,41 +197,75 @@ void	free_commands(t_cmd *commands)
 
 
 
+void	free_commands(t_cmd *commands)
+{
+	t_cmd *current;
+	t_cmd *temp;
+
+	current = commands;
+	while (current)
+	{
+		temp = current;
+		current = current->next;
+		free_command(temp);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
 t_cmd *parse_tokens(t_token *tokens)
 {
-    t_cmd *commands = NULL;
-    t_cmd *current_cmd = NULL;
-    t_token *current = tokens;
+	t_cmd *commands = NULL;
+	t_cmd *current_cmd = NULL;
+	t_token *current = tokens;
     
-    commands = create_new_command();
+	commands = create_new_command();
 	if (!commands)
 	{
-   		free_commands(commands);
-    	return NULL;
+		free_commands(commands);
+		return NULL;
 	}
-    current_cmd = commands;
-    while (current && !current->syn_err)
-    {
-        if (current->type == pip)
-        {
-            current_cmd->next = create_new_command();
+	current_cmd = commands;
+	while (current && !current->syn_err)
+	{
+		if (current->type == pip)
+		{
+			current_cmd->next = create_new_command();
 			if (!current_cmd->next)
 			{
-   				free_commands(commands);
-    			return NULL;
+				free_commands(commands);
+				return NULL;
 			}
-            current_cmd = current_cmd->next;
-        }
-        else if (current->type == red)
-        {
+			current_cmd = current_cmd->next;
+		}
+		else if (current->type == red)
+		{
             if (!current->next || current->next->type != file)
 			{
         		printf("Syntax error: Missing filename after redirection\n");
         		free_commands(commands);
         		return NULL;
 			}
+			else if (current->next || current->next->type == file)
+			{
+            	current_cmd->next = create_new_command();
+				if (!current_cmd->next)
+				{
+   					free_commands(commands);
+    				return NULL;
+				}
+        		current_cmd = current_cmd->next;
+       		}
         }
-        else if (current->type == cmd || current->type == text)
+        else if (current->type == cmd || current->type == text || current->type == file)
             add_argument(current_cmd, current->value);
         if (current)
             current = current->next;

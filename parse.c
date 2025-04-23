@@ -1,3 +1,8 @@
+/**
+ * parse.c
+ * Contains functions for parsing tokens into command structures
+ */
+
 #include "he.h"
 
 
@@ -80,6 +85,7 @@ t_redirection	*create_redirection(char *file, int type)
 		return NULL;
 	redir->file = ft_strdup(file);
 	redir->type = type;
+	redir->fd = -1;
 	redir->next = NULL;
 	return (redir);
 }
@@ -109,6 +115,45 @@ void handle_redirection(t_cmd *cmd, t_token *token)
 
     if (redir_type == REDIR_IN || redir_type == REDIR_HEREDOC)
 	{
+		if (redir_type == REDIR_HEREDOC)
+		{
+    		int fd = open("tmp_f_i_l_e", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+   			if (fd < 0)
+    		{
+       			perror("open");
+        		free(redir->file);
+        		free(redir);
+        		return;
+			}
+    
+    		char *line;
+    		while (1)
+    		{
+        		line = readline("> ");
+        		if (!line)
+            		break;
+        		if (ft_strcmp(line, file_token->value) == 0)
+        		{
+            		free(line);
+            		break;
+        		}
+        		write(fd, line, ft_strlen(line));
+        		write(fd, "\n", 1);
+        		free(line);
+    		}
+    		close(fd);
+    
+    		redir->fd = open("tmp_f_i_l_e", O_RDONLY);
+    		if (redir->fd < 0)
+    		{
+        		perror("open heredoc tmp");
+        		free(redir->file);
+        		free(redir);
+        		return;
+    		}
+		}
+		else//input!!!
+			redir->fd = open(redir->file, O_RDONLY);
         if (!cmd->in)
             cmd->in = redir;
 		else
@@ -120,7 +165,10 @@ void handle_redirection(t_cmd *cmd, t_token *token)
         }
     } else if (redir_type == REDIR_OUT || redir_type == REDIR_APPEND)
 	{
-
+		if (redir_type == REDIR_APPEND)
+			redir->fd = open(redir->file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+		else//output!!!
+			redir->fd = open(redir->file, O_WRONLY | O_CREAT | O_TRUNC, 0644);;
         if (!cmd->out)
             cmd->out = redir;
         else
@@ -197,23 +245,6 @@ void	free_commands(t_cmd *commands)
 
 
 
-void	free_commands(t_cmd *commands)
-{
-	t_cmd *current;
-	t_cmd *temp;
-
-	current = commands;
-	while (current)
-	{
-		temp = current;
-		current = current->next;
-		free_command(temp);
-	}
-}
-
-
-
-
 
 
 
@@ -254,18 +285,13 @@ t_cmd *parse_tokens(t_token *tokens)
         		free_commands(commands);
         		return NULL;
 			}
-			else if (current->next || current->next->type == file)
+			else if (current->next && current->next->type == file)
 			{
-            	current_cmd->next = create_new_command();
-				if (!current_cmd->next)
-				{
-   					free_commands(commands);
-    				return NULL;
-				}
-        		current_cmd = current_cmd->next;
+				handle_redirection(current_cmd, current);
+				current = current->next; // skipp file token!!1
        		}
         }
-        else if (current->type == cmd || current->type == text || current->type == file)
+        else if (current->type == text)
             add_argument(current_cmd, current->value);
         if (current)
             current = current->next;

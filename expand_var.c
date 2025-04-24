@@ -1,6 +1,6 @@
 # include "he.h"
 //0 = true  , 1 = false $?
-extern int var_status;
+
 
 
 char *get_var_value(char *var_name)
@@ -33,7 +33,7 @@ char *expand_env_vars(char *str, t_quote_state *state)
             if (str[i] == '?')
             {
                 char c;
-                if(!var_status)
+                if(!exit_status)
 					c = '0';
 				else
 					c = '1';
@@ -73,11 +73,11 @@ char *expand_env_vars(char *str, t_quote_state *state)
 
 int expand_variables(t_token *tokens, t_quote_state *state)
 {
-    t_token *current = tokens;
+	t_token *current = tokens;
 
-    while (current)
-    {
-        if (current->type == text || current->type == file)
+	while (current)
+	{
+        if (current->type == text)
         {
             char *expanded = expand_env_vars(current->value, state);
             if (!expanded)
@@ -90,6 +90,3 @@ int expand_variables(t_token *tokens, t_quote_state *state)
     return (1);
 }
 
-
-
-///////////////////////??????

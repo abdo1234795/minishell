@@ -1,7 +1,3 @@
-/**
- * parse.c
- * Contains functions for parsing tokens into command structures
- */
 
 #include "he.h"
 

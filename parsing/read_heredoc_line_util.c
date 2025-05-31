@@ -6,7 +6,7 @@
 /*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 11:12:40 by abel-had          #+#    #+#             */
-/*   Updated: 2025/05/30 17:13:33 by abel-had         ###   ########.fr       */
+/*   Updated: 2025/05/31 12:06:17 by abel-had         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,8 @@
 
 int	setup_heredoc_reading(int *fd)
 {
-	g_signal_pid = 0;
+	if (g_signal_pid != 2)
+		g_signal_pid = 0;
 	*fd = dup(0);
 	if (*fd == -1)
 		return (-1);
@@ -30,6 +31,7 @@ int	sig_return(int fd)
 		close(fd);
 		return (-2);
 	}
+	g_signal_pid = 2;
 	return (-3);
 }
 
@@ -68,6 +70,7 @@ void	heredoc_signal(int a)
 {
 	(void)a;
 	close(0);
-	write(1, "\n", 1);
+	if (g_signal_pid != 2)
+		write(1, "\n", 1);
 	g_signal_pid = 3;
 }

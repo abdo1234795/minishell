@@ -6,7 +6,7 @@
 /*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 18:25:32 by abel-had          #+#    #+#             */
-/*   Updated: 2025/05/31 11:00:32 by abel-had         ###   ########.fr       */
+/*   Updated: 2025/05/31 12:05:51 by abel-had         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,6 @@ int	process_heredoc(t_sp_var *va)
 	result = init_heredoc_buffer(va);
 	if (result != 0)
 		return (result);
-	if (g_signal_pid != -2)
-		g_signal_pid = 2;
-	else
-		return (-2);
 	result = read_heredoc_lines(va);
 	if (result != 0)
 		return (result);

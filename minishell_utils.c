@@ -6,7 +6,7 @@
 /*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/28 09:21:39 by abel-had          #+#    #+#             */
-/*   Updated: 2025/05/30 11:21:39 by abel-had         ###   ########.fr       */
+/*   Updated: 2025/05/31 11:56:13 by abel-had         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ void	main_loop(t_tools *tools, t_sp_var *v, struct termios *terminal)
 		check_line(v);
 		if (*v->line != '\0')
 		{
-			if (g_signal_pid == 3)
+			if (g_signal_pid == 3 || g_signal_pid == 2)
 				g_signal_pid = 0;
 			status_manage(v);
 			process_commands(tools, v);

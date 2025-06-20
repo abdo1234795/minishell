@@ -6,7 +6,7 @@
 /*   By: aelbour <aelbour@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/07 10:36:58 by abel-had          #+#    #+#             */
-/*   Updated: 2025/05/28 12:58:08 by aelbour          ###   ########.fr       */
+/*   Updated: 2025/06/16 15:38:59 by aelbour          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,8 @@ void	ft_execute(t_tools *tools)
 		execute_pipeline(tools);
 	else
 	{
-		if (tools->cmd->in || tools->cmd->out)
+		if ((tools->cmd->in || tools->cmd->out) && \
+			ft_strcmp(tools->cmd->name, "exit"))
 		{
 			in_backup = dup(STDIN_FILENO);
 			out_backup = dup(STDOUT_FILENO);

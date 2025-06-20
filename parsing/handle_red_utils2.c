@@ -6,7 +6,7 @@
 /*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 18:25:32 by abel-had          #+#    #+#             */
-/*   Updated: 2025/05/31 12:05:51 by abel-had         ###   ########.fr       */
+/*   Updated: 2025/06/18 15:54:40 by abel-had         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ int	read_heredoc_lines(t_sp_var *va)
 	{
 		line_result = process_heredoc_line(va, &tmp, fd);
 		if (line_result != 1)
-			return (line_result);
+			return (close(fd), line_result);
 		expand_heredoc_line(va, &tmp);
 		result = resize_heredoc_buffer(va);
 		if (result != 0)
@@ -53,7 +53,7 @@ int	process_heredoc(t_sp_var *va)
 
 int	handle_red_if1(t_cmd *cmd, t_sp_var *va)
 {
-	int	result;
+	int			result;
 
 	result = 0;
 	(void) cmd;

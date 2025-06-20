@@ -6,7 +6,7 @@
 /*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 09:50:34 by abel-had          #+#    #+#             */
-/*   Updated: 2025/05/31 11:00:22 by abel-had         ###   ########.fr       */
+/*   Updated: 2025/06/19 09:00:35 by abel-had         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,6 +140,7 @@ typedef struct s_pt
 	bool	syn_err;
 	char	*err_file;
 	int		result;
+	int		count_heredoc;
 	int		a;
 }	t_pt;
 
@@ -192,6 +193,7 @@ typedef struct s_expand
 	int		k;
 	char	*var_name;
 	char	*value;
+	size_t	capacity;
 }	t_expand;
 
 typedef struct s_readline
@@ -338,4 +340,9 @@ int			process_heredoc_line(t_sp_var *va, char **tmp, int fd);
 int			sig_return(int fd);
 int			setup_heredoc_reading(int *fd);
 
+int			p_without_buffer_dq_condition(t_v *v, t_sp_var *va);
+int			resize_expand_buffer(t_expand *e, t_sp_var *va, size_t needed);
+char		*handle_expansion(char *str, t_sp_var *va, t_expand *e);
+int			expand_part0(char *str, t_sp_var *va, t_expand *e);
+char		**ft_spplit(char *str, char *charset, t_sp_var *va);
 #endif

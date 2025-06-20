@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aelbour <aelbour@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/28 08:51:06 by abel-had          #+#    #+#             */
-/*   Updated: 2025/05/28 11:07:30 by abel-had         ###   ########.fr       */
+/*   Updated: 2025/06/16 16:54:51 by aelbour          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@ int	init_v(t_sp_var **v)
 	return (1);
 }
 
-//test11111111111111111
 void	init_pwd_variables(t_tools *tools)
 {
 	char	*path;
@@ -49,7 +48,6 @@ void	init_pwd_variables(t_tools *tools)
 		update_var(tools, ft_strdup(path, tools->aloc, 0), "PWD");
 	}
 	free(path);
-	path = get_key_value("OLDPWD", *(tools->env));
 	update_var(tools, NULL, "OLDPWD");
 }
 
@@ -78,6 +76,8 @@ void	init_execution_tools(t_tools *tools, t_sp_var *v, char **envp)
 	tools->env = &(v->env);
 	tools->envp = envp;
 	tools->v = v;
+	tools->will_exit = 1;
+	tools->cmd_head = NULL;
 	push_envp(tools);
 	init_env_variables(tools, v);
 }

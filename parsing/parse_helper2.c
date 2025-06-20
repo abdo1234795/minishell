@@ -6,7 +6,7 @@
 /*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 18:40:36 by abel-had          #+#    #+#             */
-/*   Updated: 2025/05/29 16:39:39 by abel-had         ###   ########.fr       */
+/*   Updated: 2025/06/02 13:06:03 by abel-had         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ int	while_part_if_2(t_sp_var *va, int *x)
 void	while_part_print_err(t_sp_var *va, int *x)
 {
 	if (va->vpt->err != 0 && va->vpt->tmp_err != -2
-		&& g_signal_pid != -2 && va->vpt->err != -3
+		&& va->vpt->err != -3
 		&& !va->vpt->current_cmd->am && *x == 0)
 	{
 		print_error("minishell: ");
@@ -103,6 +103,8 @@ int	while_part(t_sp_var *va)
 		a = while_part_fiill(va, &x);
 		if (a != 1)
 			return (a);
+		if (va->vpt->count_heredoc >= 17)
+			return (17);
 	}
 	while_part_print_err(va, &x);
 	if (va->vpt->syn_err)

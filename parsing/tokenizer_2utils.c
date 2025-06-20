@@ -6,7 +6,7 @@
 /*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 10:25:44 by abel-had          #+#    #+#             */
-/*   Updated: 2025/05/27 12:12:00 by abel-had         ###   ########.fr       */
+/*   Updated: 2025/06/18 19:06:12 by abel-had         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,13 @@ int	add_token_with_type_fill(t_v *v, t_sp_var *va, char **static_buffer)
 void	big_conditions(t_v *v, t_sp_var *va, char **static_buffer)
 {
 	if (v->buff)
+	{
 		p_with_buffer(v, va, static_buffer);
+	}
 	else
+	{
 		p_without_buffer(v, va, static_buffer);
+	}
 }
 
 int	add_token_with_type(t_sp_var *va)

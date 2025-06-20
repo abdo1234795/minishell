@@ -6,7 +6,7 @@
 /*   By: aelbour <aelbour@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/25 09:43:55 by aelbour           #+#    #+#             */
-/*   Updated: 2025/05/28 16:50:41 by aelbour          ###   ########.fr       */
+/*   Updated: 2025/06/02 17:48:38 by aelbour          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,4 +32,17 @@ void	cd_error(char *path)
 void	print_error(const char *msg)
 {
 	ft_putstr_fd((char *)msg, 2);
+}
+
+void	critical_error(char *syscall, t_tools *tools, int quit, int *r_stat)
+{
+	perror(syscall);
+	if (quit)
+	{
+		if (strcmp(syscall, "malloc"))
+			clean_up(tools);
+		exit(EXIT_FAILURE);
+	}
+	else
+		*r_stat = 1;
 }

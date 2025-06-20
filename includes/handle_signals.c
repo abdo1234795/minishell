@@ -6,7 +6,7 @@
 /*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/27 11:29:52 by abel-had          #+#    #+#             */
-/*   Updated: 2025/05/30 15:11:33 by abel-had         ###   ########.fr       */
+/*   Updated: 2025/06/18 16:02:39 by abel-had         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ static int	handle_sigint_part1(void)
 {
 	if (g_signal_pid == 4)
 		return (0);
-	if (g_signal_pid == 3)
+	if (g_signal_pid == 3 || g_signal_pid == 2)
 	{
 		rl_replace_line("", 0);
 		rl_on_new_line();

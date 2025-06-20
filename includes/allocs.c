@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   allocs.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aelbour <aelbour@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 15:33:05 by aelbour           #+#    #+#             */
-/*   Updated: 2025/05/30 11:32:14 by aelbour          ###   ########.fr       */
+/*   Updated: 2025/05/28 11:08:08 by abel-had         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ void	*mmallocc(size_t size, t_malloc **head, int p_type)
 
 	pointer = NULL;
 	pointer = malloc(size);
+	ft_memset(pointer, 0, size);
 	if (!pointer)
 		return (critical_error("malloc", NULL, 1, NULL), NULL);
 	new = malloc(sizeof(t_malloc));
@@ -31,21 +32,6 @@ void	*mmallocc(size_t size, t_malloc **head, int p_type)
 	new->p_type = p_type;
 	(*head) = new;
 	return (pointer);
-}
-
-void	clean_garbage(t_malloc **aloc)
-{
-	t_malloc	*cursor;
-	t_malloc	*next;
-
-	cursor = *aloc;
-	while (cursor)
-	{
-		next = cursor->next;
-		if (cursor->p_type == P_GARBAGE)
-			free_ptr(aloc, cursor->ptr);
-		cursor = next;
-	}
 }
 
 void	free_ptr(t_malloc **head, void *addr)

@@ -6,7 +6,7 @@
 /*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 18:22:46 by abel-had          #+#    #+#             */
-/*   Updated: 2025/05/31 10:59:45 by abel-had         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:50:22 by abel-had         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,8 @@ int	heredoc_to_temp_file(t_sp_var *va)
 	}
 	close(va->hrv->fd);
 	va->hrv->redir->fd = open("t_m_p_f_i_l_e", O_RDONLY);
+	if (va->hrv->redir->fd == -1)
+		return (errno);
 	a = unlink("t_m_p_f_i_l_e");
 	if (a)
 		perror("minishell: unlink: ");

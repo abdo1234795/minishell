@@ -6,7 +6,7 @@
 /*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 17:55:12 by abel-had          #+#    #+#             */
-/*   Updated: 2025/05/29 16:31:58 by abel-had         ###   ########.fr       */
+/*   Updated: 2025/06/02 17:51:02 by abel-had         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,9 @@ int	while_ambiguous_part(t_sp_var *va, int *x)
 	if (va->vpt->current->next && va->vpt->current->next->ambiguous && *x == 0)
 	{
 		if (va->vpt->current_cmd)
+		{
 			va->vpt->current_cmd->name = NULL;
+		}
 		va->vpt->current_cmd->am = true;
 		print_error("minishell: ambiguous redirect\n");
 		*x = 1;

@@ -6,7 +6,7 @@
 /*   By: aelbour <aelbour@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/27 12:21:50 by aelbour           #+#    #+#             */
-/*   Updated: 2025/05/28 12:23:01 by aelbour          ###   ########.fr       */
+/*   Updated: 2025/06/02 18:05:55 by aelbour          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,4 +72,15 @@ void	no_cmd_error(t_tools *tools)
 	print_error(tools->cmd->name);
 	print_error(": command not found\n");
 	*(tools->r_stat) = 127;
+}
+
+int	handle_numric_arg_exit(t_tools *tools, char *s)
+{
+	long long	i;
+
+	i = ft_atoi(s);
+	if (errno == ERANGE)
+		exit_numeric_error(s, tools);
+	clean_up(tools);
+	exit(i % 256);
 }

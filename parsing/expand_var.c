@@ -6,7 +6,7 @@
 /*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 18:14:00 by abel-had          #+#    #+#             */
-/*   Updated: 2025/05/26 18:22:35 by abel-had         ###   ########.fr       */
+/*   Updated: 2025/06/19 08:54:48 by abel-had         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ int	init_expand_var(t_expand *e, t_sp_var *va)
 	e->k = 0;
 	e->var_name = NULL;
 	e->value = NULL;
+	e->capacity = 999;
 	e->result = mmallocc(9999, &va->allocs, P_GARBAGE);
 	if (!e->result)
 		return (0);
@@ -82,27 +83,11 @@ int	expand_part0(char *str, t_sp_var *va, t_expand *e)
 char	*expand_env_vars(char *str, t_sp_var *va)
 {
 	t_expand	*e;
-	int			b;
 
 	e = mmallocc(sizeof(t_expand), &va->allocs, P_GARBAGE);
 	if (!str || !e)
 		return (NULL);
 	if (!init_expand_var(e, va))
 		return (NULL);
-	while (str[e->i])
-	{
-		if (str[e->i] == '$' && str[e->i + 1]
-			&& va->var->state != SINGLE_QUOTED)
-		{
-			b = expand_part0(str, va, e);
-			if (b == 1)
-				continue ;
-			else if (b == 0)
-				return (NULL);
-		}
-		else
-			e->result[e->j++] = str[e->i++];
-	}
-	e->result[e->j] = '\0';
-	return (ft_strdup(e->result, &va->allocs, P_GARBAGE));
+	return (handle_expansion(str, va, e));
 }

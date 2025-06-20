@@ -3,24 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   redirection.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aelbour <aelbour@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abel-had <abel-had@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/06 12:31:09 by aelbour           #+#    #+#             */
-/*   Updated: 2025/05/30 15:14:14 by aelbour          ###   ########.fr       */
+/*   Updated: 2025/05/27 11:25:45 by abel-had         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "execution.h"
-
-bool	same_file(const char *path1, const char *path2)
-{
-	struct stat	s1;
-	struct stat	s2;
-
-	if (stat(path1, &s1) < 0 || stat(path2, &s2) < 0)
-		return (false);
-	return (s1.st_ino == s2.st_ino && s1.st_dev == s2.st_dev);
-}
 
 void	fds_backup(int in_backup, int out_backup, int *r_stat)
 {
@@ -39,13 +29,9 @@ void	output_redirection(t_tools *tools)
 	{
 		cur = cur->next;
 	}
-	if (cur->fd != -11)
-	{
+	if (cur->fd != -11 && cur->fd > 0)
 		if (dup2(cur->fd, STDOUT_FILENO) == -1)
-		{
 			critical_error("dup2", NULL, 0, tools->r_stat);
-		}
-	}
 }
 
 void	input_redirection(t_tools *tools)
@@ -57,14 +43,9 @@ void	input_redirection(t_tools *tools)
 	{
 		cur = cur->next;
 	}
-	if (!same_file(cur->file, "/dev/stdin"))
-	{
-		if (cur->fd != -11)
-		{
-			if (dup2(cur->fd, STDIN_FILENO) == -1)
-				critical_error("dup2", NULL, 0, tools->r_stat);
-		}
-	}
+	if (cur->fd != -11 && cur->fd > 0)
+		if (dup2(cur->fd, STDIN_FILENO) == -1)
+			critical_error("dup2", NULL, 0, tools->r_stat);
 }
 
 void	redirect_command(t_tools *tools)

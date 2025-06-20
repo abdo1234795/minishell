@@ -6,24 +6,44 @@
 /*   By: aelbour <aelbour@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 15:24:27 by aelbour           #+#    #+#             */
-/*   Updated: 2025/05/30 12:29:38 by aelbour          ###   ########.fr       */
+/*   Updated: 2025/06/02 17:48:48 by aelbour          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void	critical_error(char *syscall, t_tools *tools, int quit, int *r_stat)
+void	clean_garbage(t_malloc **aloc)
 {
-	perror(syscall);
-	if (quit)
+	t_malloc	*cursor;
+	t_malloc	*next;
+
+	cursor = *aloc;
+	while (cursor)
 	{
-		if (strcmp(syscall, "malloc"))
-			clean_up(tools);
-		clean_files(tools);
-		exit(EXIT_FAILURE);
+		next = cursor->next;
+		if (cursor->p_type == P_GARBAGE)
+			free_ptr(aloc, cursor->ptr);
+		cursor = next;
 	}
-	else
-		*r_stat = 1;
+}
+
+void	clean_up(t_tools *tools)
+{
+	t_malloc	*nxt;
+
+	clean_files(tools);
+	if (!(tools->aloc) || !(*tools->aloc))
+		return ;
+	while ((*tools->aloc))
+	{
+		free((*tools->aloc)->ptr);
+		nxt = (*tools->aloc)->next;
+		free((*tools->aloc));
+		(*tools->aloc) = nxt;
+	}
+	(*tools->aloc) = NULL;
+	free(tools->v);
+	rl_clear_history();
 }
 
 void	clean_files(t_tools *tools)
@@ -50,22 +70,4 @@ void	clean_files(t_tools *tools)
 		}
 		cmd_cur = cmd_cur->next;
 	}
-}
-
-void	clean_up(t_tools *tools)
-{
-	t_malloc	*nxt;
-
-	if (!(tools->aloc) || !(*tools->aloc))
-		return ;
-	while ((*tools->aloc))
-	{
-		free((*tools->aloc)->ptr);
-		nxt = (*tools->aloc)->next;
-		free((*tools->aloc));
-		(*tools->aloc) = nxt;
-	}
-	(*tools->aloc) = NULL;
-	free(tools->v);
-	rl_clear_history();
 }

@@ -69,6 +69,7 @@ void	init_vpt(t_token *tokens, t_pt *vpt)
 	vpt->err_file = NULL;
 	vpt->result = -1;
 	vpt->a = -1;
+	vpt->count_heredoc = 0;
 }
 
 int	ft_detect_syn_err(t_token *tokens, t_sp_var *va)

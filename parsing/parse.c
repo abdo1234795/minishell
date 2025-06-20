@@ -89,6 +89,18 @@ void	detect_ambiguous(t_sp_var *va, t_token *tokens)
 		curr = curr->next;
 	}
 }
+void detect_heredoc_limit(t_sp_var *va, t_token *tokens)
+{
+	t_token	*curr;
+
+	curr = tokens;
+	while (curr)
+	{
+		if (curr->type == red && ft_strcmp(curr->value, "<<") == 0)
+			va->vpt->count_heredoc++;
+		curr = curr->next;
+	}
+}
 
 t_cmd	*parse_tokens(t_token *tokens, t_sp_var *va)
 {
@@ -96,6 +108,12 @@ t_cmd	*parse_tokens(t_token *tokens, t_sp_var *va)
 	if (!va->vpt)
 		return (NULL);
 	va->ambig = false;
+	detect_heredoc_limit(va, tokens);
+	if (va->vpt->count_heredoc == 17)
+	{
+		va->status = 2;
+		return (NULL);
+	}
 	detect_ambiguous(va, tokens);
 	init_vpt(tokens, va->vpt);
 	if (!ft_detect_syn_err(tokens, va))

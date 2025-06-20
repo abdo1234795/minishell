@@ -32,6 +32,7 @@ int	init_v(t_sp_var **v)
 	return (1);
 }
 
+//test
 void	init_pwd_variables(t_tools *tools)
 {
 	char	*path;
